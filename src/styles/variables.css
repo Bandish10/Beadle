@@ -1,0 +1,44 @@
+:root {
+  /* ── Single theme (Abbey Road cinematic) ── */
+  --bg: #0c0c0e;
+  --bg-secondary: #161619;
+  --surface: #1a1a1e;
+  --surface-alt: #222226;
+  --text: #ffffff;
+  --text-muted: #e6e6e6;
+  --primary: #ffffff;
+  --accent: #ff5c6d;
+  --accent-glow: rgba(255, 71, 87, 0.18);
+  --green: #28ff9e;
+  --green-glow: rgba(46, 213, 115, 0.12);
+  --border: #2a2a2e;
+  --empty: #2a2a2e;
+  --bg-image-1: url('/beatles_anim_1.png');
+  --bg-image-2: url('/beatles_anim_2.png');
+  --bg-image-3: url('/beatles_anim_3.png');
+  --bg-image-4: url('/beatles_anim_4.png');
+  --bg-image-5: url('/beatles_anim_5.png');
+  --bg-image-6: url('/beatles_anim_6.png');
+  --bg-image-7: url('/beatles_anim_7.png');
+  --bg-blend: normal;
+  --bg-size: cover;
+  --bg-repeat: no-repeat;
+  --glass-bg: rgba(18, 18, 22, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --empty-slot-bg: rgba(255, 255, 255, 0.05);
+  --empty-slot-border-style: dashed;
+  --empty-slot-border-color: var(--empty);
+
+  /* Guess Slot styles */
+  --slot-bg: var(--surface);
+  --slot-blur: none;
+
+  /* ── Typography ── */
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-mono: 'SF Mono', 'Fira Code', monospace;
+
+  /* ── Motion ── */
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --speed: 0.25s;
+}
