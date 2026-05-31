@@ -535,6 +535,14 @@ html[data-theme='dark'] .guess-slot {
   transform: translateX(-50%) translateY(0);
 }
 
+.skip-helper {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-align: center;
+}
+
 .skip-btn {
   width: 100%;
   display: flex;
@@ -568,6 +576,10 @@ html[data-theme='dark'] .skip-btn-wrap[data-tooltip]::after {
   background: #141418;
   border-color: #ffffff;
   color: #ffffff;
+}
+
+html[data-theme='dark'] .skip-helper {
+  color: rgba(255, 255, 255, 0.72);
 }
 
 html[data-theme='dark'] .skip-btn {

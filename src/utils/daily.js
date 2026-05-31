@@ -29,7 +29,7 @@ export function getRandomSong(excludeIds = []) {
 }
 
 // Progressive reveal durations in seconds for attempts 1 through 5
-export const ATTEMPT_DURATIONS = [2, 5, 8, 12, 16];
+export const ATTEMPT_DURATIONS = [2, 5, 9, 14, 20];
 
 // Skip bonus durations in seconds for attempts 1 through 4
 export const SKIP_BONUSES = [3, 4, 5, 6];

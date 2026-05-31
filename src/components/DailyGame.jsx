@@ -126,9 +126,15 @@ export default function DailyGame() {
                   className="skip-btn"
                   onClick={skip}
                   disabled={gameOver || isLastGuess}
+                  aria-describedby={isLastGuess ? 'skip-last-guess-help' : undefined}
                 >
                   {gameOver ? 'Game over' : `Skip (+${bonusSec}s)`}
                 </button>
+                {isLastGuess && (
+                  <p id="skip-last-guess-help" className="skip-helper">
+                    This is your last guess
+                  </p>
+                )}
               </div>
             </div>
           </>

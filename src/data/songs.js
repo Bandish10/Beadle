@@ -5,7 +5,8 @@ const REMIX_VARIANT_PATTERN =
 
 function decodeTitle(title) {
   if (typeof window !== 'undefined' && typeof window.atob === 'function') {
-    return window.atob(title);
+    const bytes = Uint8Array.from(window.atob(title), (c) => c.charCodeAt(0));
+    return new TextDecoder('utf-8').decode(bytes);
   }
   return Buffer.from(title, 'base64').toString('utf8');
 }
