@@ -1,9 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { Music, Play, Pause } from 'lucide-react';
 
-export default function GameOverScreen({ puzzle, guesses, maxAttempts, previewUrl, artworkUrl, onShare, onPlayMore }) {
+export default function GameOverScreen({
+  puzzle,
+  guesses,
+  maxAttempts,
+  previewUrl,
+  artworkUrl,
+  onShare,
+  onPlayMore,
+}) {
   const isWin = guesses.some(
-    g => g && g.toLowerCase() === puzzle.song.title.toLowerCase()
+    (g) => g && g.toLowerCase() === puzzle.song.title.toLowerCase(),
   );
   const score = isWin ? guesses.length : 'X';
   const audioRef = useRef(null);
@@ -11,7 +19,10 @@ export default function GameOverScreen({ puzzle, guesses, maxAttempts, previewUr
 
   useEffect(() => {
     if (audioRef.current && previewUrl) {
-      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+      audioRef.current
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => {});
     }
   }, [previewUrl]);
 
@@ -21,7 +32,10 @@ export default function GameOverScreen({ puzzle, guesses, maxAttempts, previewUr
       audioRef.current.pause();
       setPlaying(false);
     } else {
-      audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+      audioRef.current
+        .play()
+        .then(() => setPlaying(true))
+        .catch(() => {});
     }
   };
 
@@ -35,7 +49,7 @@ export default function GameOverScreen({ puzzle, guesses, maxAttempts, previewUr
           onEnded={() => setPlaying(false)}
         />
       )}
-      
+
       <div className="gameover-header">
         <span className={`gameover-badge ${isWin ? 'win' : 'lose'}`}>
           {isWin ? '🎉 You got it!' : '😔 Not this time'}
@@ -49,14 +63,22 @@ export default function GameOverScreen({ puzzle, guesses, maxAttempts, previewUr
 
       <div className="gameover-album" onClick={togglePlayback}>
         {artworkUrl ? (
-          <img src={artworkUrl} alt={`${puzzle.song.title} Album Art`} className="gameover-artwork" />
+          <img
+            src={artworkUrl}
+            alt={`${puzzle.song.title} Album Art`}
+            className="gameover-artwork"
+          />
         ) : (
           <div className="gameover-artwork-placeholder">
             <Music size={64} opacity={0.2} />
           </div>
         )}
         <div className={`gameover-play-overlay ${playing ? 'playing' : ''}`}>
-          {playing ? <Pause size={48} fill="currentColor" /> : <Play size={48} fill="currentColor" />}
+          {playing ? (
+            <Pause size={48} fill="currentColor" />
+          ) : (
+            <Play size={48} fill="currentColor" />
+          )}
         </div>
       </div>
 

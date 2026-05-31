@@ -1,8 +1,8 @@
 # Beadle
 
-A Beatles‑only music guessing game with daily puzzles, streak mode, and leaderboards.
+A Beatles-only music guessing game with daily puzzles, streak mode, and leaderboards.
 
-## Quick start
+## Quick Start
 
 ### 1) Install dependencies
 
@@ -10,98 +10,83 @@ A Beatles‑only music guessing game with daily puzzles, streak mode, and leader
 
 ### 2) Configure environment
 
-Create a `.env` file (not committed) with your Neon connection string:
+Create a `.env` file with:
 
 - `DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require`
+- `VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX` (optional, enables Google Analytics)
+- `VITE_API_BASE_URL=` (leave empty locally; set to Railway backend URL on Vercel)
+- `FRONTEND_ORIGIN=http://localhost:3000` (local default; set to Vercel URL on Railway)
 
 ### 3) Initialize the database
 
 - `npm run db:init`
 
 This creates:
+
 - `daily_leaderboard`
 - `streak_leaderboard`
+- `visitors`
 
----
+## How To Run
 
-## How to run
-
-### Frontend only (no API)
-
-Use this if you don’t need leaderboards:
+Run the frontend and API together:
 
 - `npm run dev`
 
-Note: `/api/*` calls won’t work without a serverless runtime.
+This starts the Express server, mounts Vite in development, and serves `/api/*` from the same origin.
 
-### API only (serverless functions)
+API examples:
 
-Use Vercel’s local runtime to test `/api/*` routes:
-
-- `npm run dev:vercel`
-
-You can then hit:
 - `GET http://localhost:3000/api/leaderboard/daily`
 - `GET http://localhost:3000/api/leaderboard/streak`
+- `POST http://localhost:3000/api/visitors`
 
-### Run frontend + API together
+## Deployment
 
-Use Vercel dev (recommended) to serve both:
+This repo has two deploy targets:
 
-- `npm run dev:vercel`
+- Vercel: frontend only
+- Railway: backend/API only
 
-This hosts the frontend and `/api` in one process.
+### Railway backend
 
----
+Create a Railway service from this GitHub repo.
 
-## Testing the API
+Use:
 
-### Fetch daily leaderboard
+- Start command: `npm start`
+- Healthcheck path: `/api/health`
 
-- `GET /api/leaderboard/daily`
+Set Railway environment variables:
 
-### Fetch streak leaderboard
+- `DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require`
+- `FRONTEND_ORIGIN=https://your-vercel-app.vercel.app`
 
-- `GET /api/leaderboard/streak`
+You can also use `ALLOWED_ORIGINS` for multiple comma-separated frontend origins:
 
-### Save daily score
+- `ALLOWED_ORIGINS=https://your-vercel-app.vercel.app,https://your-custom-domain.com`
 
-- `POST /api/leaderboard/daily`
+### Vercel frontend
 
-Payload:
-```json
-{ "uid": "...", "name": "...", "days": 1, "score": 10 }
-```
+Create a Vercel project from the same GitHub repo. Vercel uses `vercel.json` and deploys only the static Vite frontend from `dist`.
 
-### Save streak score
+Set Vercel environment variables:
 
-- `POST /api/leaderboard/streak`
+- `VITE_API_BASE_URL=https://your-railway-service.up.railway.app`
+- `VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX` (optional)
 
-Payload:
-```json
-{ "uid": "...", "name": "...", "streak": 4 }
-```
+Do not set `DATABASE_URL` on Vercel. The database connection string belongs only on Railway.
 
----
+### Security model
 
-## Deployment (Vercel)
+The React frontend never imports or receives `DATABASE_URL`. Browser requests go to the Railway API, and the API talks to Neon server-side. Railway CORS only allows your configured Vercel/custom frontend origins.
 
-1) Push to GitHub.
-2) In Vercel → Project → Settings → Environment Variables:
-   - Add `DATABASE_URL` (Neon connection string).
-3) Deploy.
-
-### Notes
-- All DB access is **server‑side** via `/api/*` serverless functions.
-- No DB secrets are exposed to the client.
-- No CORS setup required in production (same‑origin).
-
----
+For local development, `npm run dev` starts Express and Vite together on one origin, so the frontend can call `/api/*` without `VITE_API_BASE_URL`.
 
 ## Scripts
 
-- `npm run dev` — Vite dev server (frontend only)
-- `npm run dev:vercel` — Vercel dev (frontend + API)
-- `npm run build` — Production build
-- `npm run preview` — Preview build
-- `npm run db:init` — Initialize database schema
+- `npm run dev` - Express + Vite dev server
+- `npm run client:dev` - Vite frontend only
+- `npm run build` - Production build
+- `npm start` - Run the Express server
+- `npm run db:init` - Initialize database schema

@@ -60,7 +60,9 @@ html[data-theme='dark'] .gameover-badge.lose {
 html[data-theme='dark'] .streak-game .gameover-badge,
 html[data-theme='dark'] .streak-game .gameover-song,
 html[data-theme='dark'] .streak-game .gameover-artist {
-  text-shadow: 0 0 3px #000000, 0 3px 6px #000000;
+  text-shadow:
+    0 0 3px #000000,
+    0 3px 6px #000000;
 }
 
 .puzzle-badge {
@@ -606,6 +608,26 @@ html[data-theme='dark'] .skip-btn:hover:not(:disabled) {
   font-weight: 600;
 }
 
+.leaderboard-row.current-user {
+  background: var(--primary);
+  color: var(--bg);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.leaderboard-row.leaderboard-separator {
+  margin-top: 10px;
+  position: relative;
+}
+
+.leaderboard-row.leaderboard-separator::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  right: 10px;
+  border-top: 1px dashed var(--border);
+}
+
 .leaderboard-table.streak .leaderboard-row {
   grid-template-columns: 32px 1fr 90px;
 }
@@ -621,6 +643,23 @@ html[data-theme='dark'] .skip-btn:hover:not(:disabled) {
   padding: 12px;
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.visitor-count {
+  position: fixed;
+  left: 12px;
+  bottom: 10px;
+  z-index: 20;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
 }
 
 .name-form {

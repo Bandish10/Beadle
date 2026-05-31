@@ -72,7 +72,10 @@ export default function StreakGame() {
       audioRef.current &&
       puzzle?.song?.previewUrl
     ) {
-      audioRef.current.play().then(() => setResultPlaying(true)).catch(() => {});
+      audioRef.current
+        .play()
+        .then(() => setResultPlaying(true))
+        .catch(() => {});
     }
   }, [gameStatus, puzzle]);
 
@@ -147,7 +150,10 @@ export default function StreakGame() {
       audio.pause();
       setResultPlaying(false);
     } else {
-      audio.play().then(() => setResultPlaying(true)).catch(() => {});
+      audio
+        .play()
+        .then(() => setResultPlaying(true))
+        .catch(() => {});
     }
   };
 
@@ -168,14 +174,14 @@ export default function StreakGame() {
           <div className="gameover-screen">
             {(gameStatus === 'lost' || gameStatus === 'won') &&
               puzzle?.song?.previewUrl && (
-              <audio
-                ref={audioRef}
-                src={puzzle.song.previewUrl}
-                preload="auto"
-                loop
-                onEnded={() => setResultPlaying(false)}
-              />
-            )}
+                <audio
+                  ref={audioRef}
+                  src={puzzle.song.previewUrl}
+                  preload="auto"
+                  loop
+                  onEnded={() => setResultPlaying(false)}
+                />
+              )}
             <div className="gameover-header">
               <span
                 className={`gameover-badge ${gameStatus === 'won' ? 'win' : 'lose'}`}
@@ -193,8 +199,14 @@ export default function StreakGame() {
                   alt={`${puzzle.song.title} artwork`}
                   className="gameover-artwork"
                 />
-                <div className={`gameover-play-overlay ${resultPlaying ? 'playing' : ''}`}>
-                  {resultPlaying ? <Pause size={48} fill="currentColor" /> : <Play size={48} fill="currentColor" />}
+                <div
+                  className={`gameover-play-overlay ${resultPlaying ? 'playing' : ''}`}
+                >
+                  {resultPlaying ? (
+                    <Pause size={48} fill="currentColor" />
+                  ) : (
+                    <Play size={48} fill="currentColor" />
+                  )}
                 </div>
               </div>
             )}
@@ -203,7 +215,7 @@ export default function StreakGame() {
               <button className="btn-primary" onClick={retry}>
                 Want to play again?
               </button>
-              <button className="btn-secondary" onClick={() => navigate('/')}> 
+              <button className="btn-secondary" onClick={() => navigate('/')}>
                 Go back to daily
               </button>
             </div>
@@ -235,10 +247,7 @@ export default function StreakGame() {
       </div>
 
       {gameStatus === 'won' && showWinModal && (
-        <div
-          className="modal-backdrop"
-          onClick={() => setShowWinModal(false)}
-        >
+        <div className="modal-backdrop" onClick={() => setShowWinModal(false)}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2 className="modal-title win">Congrats, you got it correct!</h2>
             <div className="answer-reveal">

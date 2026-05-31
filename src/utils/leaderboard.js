@@ -1,3 +1,5 @@
+import { apiUrl } from './api';
+
 const UID_KEY = 'beadle-uid';
 const NAME_KEY = 'beadle-name';
 const DAILY_SUBMITTED_KEY_PREFIX = 'beadle-daily-submitted-';
@@ -60,7 +62,10 @@ export function updateDailyStreakDays() {
 }
 
 export function hasSubmittedDaily(puzzleNumber) {
-  return localStorage.getItem(`${DAILY_SUBMITTED_KEY_PREFIX}${puzzleNumber}`) === 'true';
+  return (
+    localStorage.getItem(`${DAILY_SUBMITTED_KEY_PREFIX}${puzzleNumber}`) ===
+    'true'
+  );
 }
 
 export function markSubmittedDaily(puzzleNumber) {
@@ -83,61 +88,74 @@ export function resetStreakSessionId() {
 }
 
 export function hasSubmittedStreak(sessionId) {
-  return localStorage.getItem(`${STREAK_SUBMITTED_KEY_PREFIX}${sessionId}`) === 'true';
+  return (
+    localStorage.getItem(`${STREAK_SUBMITTED_KEY_PREFIX}${sessionId}`) ===
+    'true'
+  );
 }
 
 export function markSubmittedStreak(sessionId) {
   localStorage.setItem(`${STREAK_SUBMITTED_KEY_PREFIX}${sessionId}`, 'true');
 }
 
+function isJsonResponse(res) {
+  const type = res.headers.get('content-type') || '';
+  return type.includes('application/json');
+}
+
 export async function submitDailyScore({ uid, name, days, score }) {
-  const res = await fetch('/api/leaderboard/daily', {
+  const res = await fetch(apiUrl('/api/leaderboard/daily'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ uid, name, days, score }),
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to save daily score');
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('Failed to parse daily score response');
-  }
+  if (!isJsonResponse(res)) return { ok: true };
+  return JSON.parse(text);
 }
 
 export async function submitStreakScore({ uid, name, streak }) {
-  const res = await fetch('/api/leaderboard/streak', {
+  const res = await fetch(apiUrl('/api/leaderboard/streak'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ uid, name, streak }),
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to save streak score');
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('Failed to parse streak score response');
-  }
+  if (!isJsonResponse(res)) return { ok: true };
+  return JSON.parse(text);
 }
 
 export async function fetchDailyLeaderboard() {
-  const res = await fetch('/api/leaderboard/daily');
+  const uid = getOrCreateUid();
+  const res = await fetch(
+    apiUrl(`/api/leaderboard/daily?uid=${encodeURIComponent(uid)}`),
+  );
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to load daily leaderboard');
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('Failed to parse daily leaderboard response');
-  }
+  if (!isJsonResponse(res)) return { top: [], currentUser: null };
+  return JSON.parse(text);
 }
 
 export async function fetchStreakLeaderboard() {
-  const res = await fetch('/api/leaderboard/streak');
+  const uid = getOrCreateUid();
+  const res = await fetch(
+    apiUrl(`/api/leaderboard/streak?uid=${encodeURIComponent(uid)}`),
+  );
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to load streak leaderboard');
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error('Failed to parse streak leaderboard response');
-  }
+  if (!isJsonResponse(res)) return { top: [], currentUser: null };
+  return JSON.parse(text);
+}
+
+export async function fetchVisitorCount() {
+  const res = await fetch(apiUrl('/api/visitors'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error('Failed to load visitor count');
+  if (!isJsonResponse(res)) return { count: 0 };
+  return JSON.parse(text);
 }

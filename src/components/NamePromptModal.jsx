@@ -26,7 +26,11 @@ export default function NamePromptModal({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose} aria-label="Close">
+        <button
+          className="modal-close-btn"
+          onClick={onClose}
+          aria-label="Close"
+        >
           <X size={22} />
         </button>
         <h2 className="modal-title win">{title}</h2>

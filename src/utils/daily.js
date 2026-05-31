@@ -12,10 +12,13 @@ export function getDailyPuzzle() {
   const index = daysSinceLaunch % songs.length;
 
   const rawSong = songs[index];
-  
+
   const song = {
     ...rawSong,
-    title: typeof window !== 'undefined' ? window.atob(rawSong.title) : rawSong.title
+    title:
+      typeof window !== 'undefined'
+        ? window.atob(rawSong.title)
+        : rawSong.title,
   };
 
   return { puzzleNumber, song };
@@ -30,7 +33,10 @@ export function getRandomSong(excludeId = null) {
   const rawSong = songs[index];
   return {
     ...rawSong,
-    title: typeof window !== 'undefined' ? window.atob(rawSong.title) : rawSong.title
+    title:
+      typeof window !== 'undefined'
+        ? window.atob(rawSong.title)
+        : rawSong.title,
   };
 }
 

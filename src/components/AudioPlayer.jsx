@@ -9,7 +9,7 @@ export default function AudioPlayer({
   attemptIndex,
   gameOver,
   loading,
-  autoPlayKey
+  autoPlayKey,
 }) {
   const audioRef = useRef(null);
   const intervalRef = useRef(null);
@@ -97,7 +97,8 @@ export default function AudioPlayer({
     const audio = audioRef.current;
     if (!audio || !previewUrl || gameOver) return;
     audio.currentTime = 0;
-    audio.play()
+    audio
+      .play()
       .then(() => {
         setPlaying(true);
         startTracking();
