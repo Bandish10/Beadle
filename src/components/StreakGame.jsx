@@ -5,7 +5,7 @@ import AudioPlayer from './AudioPlayer';
 import GuessHistory from './GuessHistory';
 import SearchInput from './SearchInput';
 import NamePromptModal from './NamePromptModal';
-import { getRandomSong, ATTEMPT_DURATIONS } from '../utils/daily';
+import { getRandomSong, ATTEMPT_DURATIONS, SKIP_BONUSES } from '../utils/daily';
 import {
   getOrCreateUid,
   getOrCreateStreakSessionId,
@@ -31,12 +31,27 @@ export default function StreakGame() {
   const loadStreakState = () => {
     try {
       const raw = localStorage.getItem('beadle-streak-state');
-      if (raw) return JSON.parse(raw);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const startingSongId = parsed?.puzzle?.song?.id;
+        return {
+          ...parsed,
+          playedSongIds:
+            Array.isArray(parsed?.playedSongIds) &&
+            parsed.playedSongIds.length > 0
+              ? parsed.playedSongIds
+              : startingSongId
+                ? [startingSongId]
+                : [],
+        };
+      }
     } catch {}
+    const song = getRandomSong(null);
     return {
-      puzzle: { song: getRandomSong(null) },
+      puzzle: { song },
       guesses: [],
       gameStatus: 'playing',
+      playedSongIds: [song.id],
     };
   };
 
@@ -48,6 +63,15 @@ export default function StreakGame() {
   const [puzzle, setPuzzle] = useState(initialState.puzzle);
   const [guesses, setGuesses] = useState(initialState.guesses);
   const [gameStatus, setGameStatus] = useState(initialState.gameStatus);
+  const [playedSongIds, setPlayedSongIds] = useState(() => {
+    if (
+      Array.isArray(initialState.playedSongIds) &&
+      initialState.playedSongIds.length > 0
+    ) {
+      return initialState.playedSongIds;
+    }
+    return initialState.puzzle?.song?.id ? [initialState.puzzle.song.id] : [];
+  });
   const [showWinModal, setShowWinModal] = useState(
     initialState.gameStatus === 'won',
   );
@@ -62,10 +86,10 @@ export default function StreakGame() {
   useEffect(() => {
     localStorage.setItem(
       'beadle-streak-state',
-      JSON.stringify({ puzzle, guesses, gameStatus }),
+      JSON.stringify({ puzzle, guesses, gameStatus, playedSongIds }),
     );
     localStorage.setItem('beadle-streak', streak.toString());
-  }, [puzzle, guesses, gameStatus, streak]);
+  }, [puzzle, guesses, gameStatus, streak, playedSongIds]);
 
   useEffect(() => {
     if (
@@ -118,21 +142,30 @@ export default function StreakGame() {
   const skip = useCallback(() => submitGuess(''), [submitGuess]);
 
   const nextSong = () => {
+    const nextPlayedSongIds = Array.from(
+      new Set([...playedSongIds, puzzle.song.id]),
+    );
+    const nextSong = getRandomSong(nextPlayedSongIds);
+
     setStreak((s) => s + 1);
-    setPuzzle({ song: getRandomSong(puzzle.song.id) });
+    setPuzzle({ song: nextSong });
     setGuesses([]);
     setGameStatus('playing');
     setShowWinModal(false);
     setAutoPlayKey((k) => k + 1);
+    setPlayedSongIds([...nextPlayedSongIds, nextSong.id]);
   };
 
   const retry = () => {
+    const nextSong = getRandomSong(null);
+
     setStreak(0);
-    setPuzzle({ song: getRandomSong(null) });
+    setPuzzle({ song: nextSong });
     setGuesses([]);
     setGameStatus('playing');
     setShowWinModal(false);
     setShowNamePrompt(false);
+    setPlayedSongIds([nextSong.id]);
     setStreakSessionId(resetStreakSessionId());
   };
 
@@ -160,11 +193,10 @@ export default function StreakGame() {
 
   const attemptIndex = guesses.length;
   const gameOver = gameStatus !== 'playing';
-  const nextDur =
-    ATTEMPT_DURATIONS[Math.min(attemptIndex + 1, ATTEMPT_DURATIONS.length - 1)];
-  const curDur =
-    ATTEMPT_DURATIONS[Math.min(attemptIndex, ATTEMPT_DURATIONS.length - 1)];
-  const bonusSec = nextDur - curDur;
+  const bonusSec =
+    SKIP_BONUSES[Math.min(attemptIndex, SKIP_BONUSES.length - 1)];
+  const isLastGuess =
+    gameStatus === 'playing' && guesses.length >= MAX_ATTEMPTS - 1;
 
   return (
     <div className="app-container streak-game">
@@ -239,9 +271,20 @@ export default function StreakGame() {
 
             <div className="controls-area">
               <SearchInput onSubmit={submitGuess} disabled={gameOver} />
-              <button className="skip-btn" onClick={skip} disabled={gameOver}>
-                Skip (+{bonusSec}s)
-              </button>
+              <div
+                className="skip-btn-wrap"
+                data-tooltip={
+                  isLastGuess ? 'This is your last guess' : undefined
+                }
+              >
+                <button
+                  className="skip-btn"
+                  onClick={skip}
+                  disabled={gameOver || isLastGuess}
+                >
+                  Skip (+{bonusSec}s)
+                </button>
+              </div>
             </div>
           </>
         )}

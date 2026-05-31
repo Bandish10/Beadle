@@ -501,15 +501,56 @@ html[data-theme='dark'] .guess-slot {
 }
 
 /* Skip */
+.skip-btn-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.skip-btn-wrap[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(4px);
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  transition:
+    opacity 0.18s var(--ease),
+    transform 0.18s var(--ease);
+}
+
+.skip-btn-wrap[data-tooltip]:hover::after,
+.skip-btn-wrap[data-tooltip]:focus-within::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .skip-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: 2px dashed var(--border);
   border-radius: 28px;
-  padding: 12px;
+  min-height: 52px;
+  padding: 14px 18px;
   font-size: 15px;
   font-weight: 700;
+  font-family: var(--font-display);
   color: var(--text-muted);
   cursor: pointer;
+  box-sizing: border-box;
   transition: all var(--speed) var(--ease);
 }
 .skip-btn:hover:not(:disabled) {
@@ -521,6 +562,12 @@ html[data-theme='dark'] .guess-slot {
 .skip-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+html[data-theme='dark'] .skip-btn-wrap[data-tooltip]::after {
+  background: #141418;
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 html[data-theme='dark'] .skip-btn {

@@ -7,7 +7,7 @@ import ResultsModal from './ResultsModal';
 import GameOverScreen from './GameOverScreen';
 import NamePromptModal from './NamePromptModal';
 import { useGameState } from '../hooks/useGameState';
-import { ATTEMPT_DURATIONS } from '../utils/daily';
+import { ATTEMPT_DURATIONS, SKIP_BONUSES } from '../utils/daily';
 import {
   getOrCreateUid,
   getSavedName,
@@ -65,11 +65,10 @@ export default function DailyGame() {
 
   const attemptIndex = guesses.length;
   const gameOver = gameStatus !== 'playing';
-  const nextDur =
-    ATTEMPT_DURATIONS[Math.min(attemptIndex + 1, ATTEMPT_DURATIONS.length - 1)];
-  const curDur =
-    ATTEMPT_DURATIONS[Math.min(attemptIndex, ATTEMPT_DURATIONS.length - 1)];
-  const bonusSec = nextDur - curDur;
+  const isLastGuess =
+    gameStatus === 'playing' && guesses.length >= maxAttempts - 1;
+  const bonusSec =
+    SKIP_BONUSES[Math.min(attemptIndex, SKIP_BONUSES.length - 1)];
 
   const handleModalClose = () => {
     setShowModal(false);
@@ -117,9 +116,20 @@ export default function DailyGame() {
 
             <div className="controls-area">
               <SearchInput onSubmit={submitGuess} disabled={gameOver} />
-              <button className="skip-btn" onClick={skip} disabled={gameOver}>
-                {gameOver ? 'Game over' : `Skip (+${bonusSec}s)`}
-              </button>
+              <div
+                className="skip-btn-wrap"
+                data-tooltip={
+                  isLastGuess ? 'This is your last guess' : undefined
+                }
+              >
+                <button
+                  className="skip-btn"
+                  onClick={skip}
+                  disabled={gameOver || isLastGuess}
+                >
+                  {gameOver ? 'Game over' : `Skip (+${bonusSec}s)`}
+                </button>
+              </div>
             </div>
           </>
         )}

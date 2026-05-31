@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search } from 'lucide-react';
-import songs from '../data/songs.json';
-
-const decodedSongs = songs.map(s => ({
-  ...s,
-  title: typeof window !== 'undefined' ? window.atob(s.title) : s.title
-}));
+import songs from '../data/songs';
 
 export default function SearchInput({ onSubmit, disabled }) {
   const [query, setQuery] = useState('');
@@ -16,9 +11,13 @@ export default function SearchInput({ onSubmit, disabled }) {
 
   // Filter
   useEffect(() => {
-    if (query.length === 0) { setResults([]); setOpen(false); return; }
+    if (query.length === 0) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
     const q = query.toLowerCase();
-    setResults(decodedSongs.filter(s => s.title.toLowerCase().includes(q)));
+    setResults(songs.filter((s) => s.title.toLowerCase().includes(q)));
     setOpen(true);
     setActiveIdx(-1);
   }, [query]);
@@ -26,26 +25,30 @@ export default function SearchInput({ onSubmit, disabled }) {
   // Click outside
   useEffect(() => {
     const handler = (e) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target))
+        setOpen(false);
     };
     document.addEventListener('pointerdown', handler);
     return () => document.removeEventListener('pointerdown', handler);
   }, []);
 
-  const select = useCallback((title) => {
-    setQuery('');
-    setOpen(false);
-    onSubmit(title);
-  }, [onSubmit]);
+  const select = useCallback(
+    (title) => {
+      setQuery('');
+      setOpen(false);
+      onSubmit(title);
+    },
+    [onSubmit],
+  );
 
   const onKey = (e) => {
     if (!open || results.length === 0) return;
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIdx(i => (i + 1) % results.length);
+      setActiveIdx((i) => (i + 1) % results.length);
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setActiveIdx(i => (i <= 0 ? results.length - 1 : i - 1));
+      setActiveIdx((i) => (i <= 0 ? results.length - 1 : i - 1));
     } else if (e.key === 'Enter' && activeIdx >= 0) {
       e.preventDefault();
       select(results[activeIdx].title);
@@ -61,7 +64,7 @@ export default function SearchInput({ onSubmit, disabled }) {
           type="text"
           placeholder="Know it? Search the song title…"
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length > 0 && setOpen(true)}
           onKeyDown={onKey}
           disabled={disabled}
