@@ -1,6 +1,6 @@
 # Beadle
 
-A Beatles-only music guessing game with daily puzzles, streak mode, and leaderboards.
+A Beatles-only music guessing game with daily puzzles, streak mode, visitor count, and leaderboards.
 
 ## Quick Start
 
@@ -14,8 +14,8 @@ Create a `.env` file with:
 
 - `DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require`
 - `VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX` (optional, enables Google Analytics)
-- `VITE_API_BASE_URL=` (leave empty locally; set to Railway backend URL on Vercel)
-- `FRONTEND_ORIGIN=http://localhost:3000` (local default; set to Vercel URL on Railway)
+- `VITE_API_BASE_URL=` (leave empty locally; set to Render backend URL on Vercel)
+- `FRONTEND_ORIGIN=http://localhost:3000`
 
 ### 3) Initialize the database
 
@@ -27,18 +27,23 @@ This creates:
 - `streak_leaderboard`
 - `visitors`
 
-## How To Run
+## Local Run
 
 Run the frontend and API together:
 
 - `npm run dev`
 
-This starts the Express server, mounts Vite in development, and serves `/api/*` from the same origin.
+Open:
 
-API examples:
+- `http://localhost:3000`
 
+Local API examples:
+
+- `GET http://localhost:3000/api/health`
+- `GET http://localhost:3000/api/health/db`
 - `GET http://localhost:3000/api/leaderboard/daily`
 - `GET http://localhost:3000/api/leaderboard/streak`
+- `GET http://localhost:3000/api/visitors`
 - `POST http://localhost:3000/api/visitors`
 
 ## Deployment
@@ -46,40 +51,57 @@ API examples:
 This repo has two deploy targets:
 
 - Vercel: frontend only
-- Railway: backend/API only
+- Render: backend/API only
 
-### Railway backend
+### Render Backend
 
-Create a Railway service from this GitHub repo.
+Create a Render Web Service from this same GitHub repo. Render uses `render.yaml`.
 
-Use:
+Use these settings if entering them manually:
 
+- Runtime: `Node`
+- Build command: `npm install`
 - Start command: `npm start`
-- Healthcheck path: `/api/health`
+- Health check path: `/api/health`
+- Plan: Free is OK
 
-Set Railway environment variables:
+Set Render environment variables:
 
 - `DATABASE_URL=postgresql://USER:PASSWORD@HOST/DB?sslmode=require`
 - `FRONTEND_ORIGIN=https://your-vercel-app.vercel.app`
 
-You can also use `ALLOWED_ORIGINS` for multiple comma-separated frontend origins:
+For multiple allowed frontend origins:
 
 - `ALLOWED_ORIGINS=https://your-vercel-app.vercel.app,https://your-custom-domain.com`
 
-### Vercel frontend
+After deploy, test:
 
-Create a Vercel project from the same GitHub repo. Vercel uses `vercel.json` and deploys only the static Vite frontend from `dist`.
+- `https://your-render-service.onrender.com/api/health`
+- `https://your-render-service.onrender.com/api/health/db`
+- `https://your-render-service.onrender.com/api/visitors`
+- `https://your-render-service.onrender.com/api/leaderboard/daily`
+- `https://your-render-service.onrender.com/api/leaderboard/streak`
+
+### Vercel Frontend
+
+Create or keep your Vercel project from the same GitHub repo. Vercel uses `vercel.json` and deploys only the Vite static frontend from `dist`.
 
 Set Vercel environment variables:
 
-- `VITE_API_BASE_URL=https://your-railway-service.up.railway.app`
+- `VITE_API_BASE_URL=https://your-render-service.onrender.com`
 - `VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX` (optional)
 
-Do not set `DATABASE_URL` on Vercel. The database connection string belongs only on Railway.
+Do not set `DATABASE_URL` on Vercel. The database connection string belongs only on Render.
 
-### Security model
+### Keep-Alive
 
-The React frontend never imports or receives `DATABASE_URL`. Browser requests go to the Railway API, and the API talks to Neon server-side. Railway CORS only allows your configured Vercel/custom frontend origins.
+The frontend pings `GET /api/health` every 10 minutes when `VITE_API_BASE_URL` is set. This helps keep a Render free backend warm while users have the Vercel site open.
+
+Render free web services can still sleep after 15 minutes with no inbound traffic at all. Preventing that when nobody has the site open requires an external cron/ping service.
+
+### Security Model
+
+The React frontend never imports or receives `DATABASE_URL`. Browser requests go to the Render API, and the API talks to Neon server-side. CORS only allows your configured Vercel/custom frontend origins.
 
 For local development, `npm run dev` starts Express and Vite together on one origin, so the frontend can call `/api/*` without `VITE_API_BASE_URL`.
 
@@ -87,6 +109,6 @@ For local development, `npm run dev` starts Express and Vite together on one ori
 
 - `npm run dev` - Express + Vite dev server
 - `npm run client:dev` - Vite frontend only
-- `npm run build` - Production build
+- `npm run build` - Production frontend build
 - `npm start` - Run the Express server
-- `npm run db:init` - Initialize database schema
+- `npm run db:init` - Initialize or migrate database schema

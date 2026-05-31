@@ -56,6 +56,9 @@ export default async function handler(req, res) {
       const { rows } = await pool.query(
         `INSERT INTO streak_leaderboard (uid, name, streak)
          VALUES ($1, $2, $3)
+         ON CONFLICT (uid)
+         DO UPDATE SET name = EXCLUDED.name,
+                       streak = GREATEST(streak_leaderboard.streak, EXCLUDED.streak)
          RETURNING uuid, uid, name, streak`,
         [uid, name, Number(streak || 0)],
       );

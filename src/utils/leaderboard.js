@@ -103,6 +103,13 @@ function isJsonResponse(res) {
   return type.includes('application/json');
 }
 
+function parseJsonResponse(res, text, errorMessage) {
+  if (!isJsonResponse(res)) {
+    throw new Error(`${errorMessage}: unexpected non-JSON response`);
+  }
+  return JSON.parse(text);
+}
+
 export async function submitDailyScore({ uid, name, days, score }) {
   const res = await fetch(apiUrl('/api/leaderboard/daily'), {
     method: 'POST',
@@ -111,8 +118,7 @@ export async function submitDailyScore({ uid, name, days, score }) {
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to save daily score');
-  if (!isJsonResponse(res)) return { ok: true };
-  return JSON.parse(text);
+  return parseJsonResponse(res, text, 'Failed to save daily score');
 }
 
 export async function submitStreakScore({ uid, name, streak }) {
@@ -123,8 +129,7 @@ export async function submitStreakScore({ uid, name, streak }) {
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to save streak score');
-  if (!isJsonResponse(res)) return { ok: true };
-  return JSON.parse(text);
+  return parseJsonResponse(res, text, 'Failed to save streak score');
 }
 
 export async function fetchDailyLeaderboard() {
@@ -134,8 +139,7 @@ export async function fetchDailyLeaderboard() {
   );
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to load daily leaderboard');
-  if (!isJsonResponse(res)) return { top: [], currentUser: null };
-  return JSON.parse(text);
+  return parseJsonResponse(res, text, 'Failed to load daily leaderboard');
 }
 
 export async function fetchStreakLeaderboard() {
@@ -145,8 +149,7 @@ export async function fetchStreakLeaderboard() {
   );
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to load streak leaderboard');
-  if (!isJsonResponse(res)) return { top: [], currentUser: null };
-  return JSON.parse(text);
+  return parseJsonResponse(res, text, 'Failed to load streak leaderboard');
 }
 
 export async function fetchVisitorCount() {
@@ -156,6 +159,5 @@ export async function fetchVisitorCount() {
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to load visitor count');
-  if (!isJsonResponse(res)) return { count: 0 };
-  return JSON.parse(text);
+  return parseJsonResponse(res, text, 'Failed to load visitor count');
 }

@@ -4,6 +4,7 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dailyLeaderboard from './backend/routes/leaderboard/daily.js';
+import { getPool } from './backend/db.js';
 import streakLeaderboard from './backend/routes/leaderboard/streak.js';
 import visitors from './backend/routes/visitors.js';
 
@@ -43,6 +44,19 @@ app.all('/api/leaderboard/streak', route(streakLeaderboard));
 app.all('/api/visitors', route(visitors));
 app.get('/api/health', (_req, res) => {
   res.status(200).json({ ok: true });
+});
+app.get('/api/health/db', async (_req, res) => {
+  try {
+    await getPool().query('SELECT 1');
+    res.status(200).json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      ok: false,
+      error: 'Database health check failed',
+      details: isProduction ? undefined : err.message,
+    });
+  }
 });
 
 if (isProduction) {

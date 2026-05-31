@@ -10,27 +10,20 @@ export default async function handler(req, res) {
     const pool = getPool();
 
     if (req.method === 'POST') {
+      await pool.query(
+        'INSERT INTO visitors (visitors) VALUES (0) ON CONFLICT DO NOTHING',
+      );
       const { rows } = await pool.query(
-        `WITH existing AS (
-           SELECT uuid FROM visitors ORDER BY uuid LIMIT 1
-         ),
-         inserted AS (
-           INSERT INTO visitors (visitors)
-           SELECT 0
-           WHERE NOT EXISTS (SELECT 1 FROM existing)
-           RETURNING uuid
-         )
-         UPDATE visitors
+        `UPDATE visitors
          SET visitors = visitors + 1
-         WHERE uuid = COALESCE(
-           (SELECT uuid FROM existing),
-           (SELECT uuid FROM inserted)
-         )
          RETURNING visitors AS count`,
       );
       return res.status(200).json({ count: rows[0]?.count || 0 });
     }
 
+    await pool.query(
+      'INSERT INTO visitors (visitors) VALUES (0) ON CONFLICT DO NOTHING',
+    );
     const { rows } = await pool.query(
       `SELECT visitors AS count
        FROM visitors
