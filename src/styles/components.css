@@ -679,6 +679,12 @@ html[data-theme='dark'] .skip-btn:hover:not(:disabled) {
   font-weight: 600;
 }
 
+.turnstile-widget {
+  display: flex;
+  justify-content: center;
+  min-height: 65px;
+}
+
 /* Vinyl groove texture */
 .modal-card::before {
   content: '';

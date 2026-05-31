@@ -18,6 +18,7 @@ import {
   markSubmittedDaily,
 } from '../utils/leaderboard';
 import { useNavigate } from 'react-router-dom';
+import { isTurnstileEnabled } from '../utils/security';
 
 export default function DailyGame() {
   const {
@@ -52,7 +53,7 @@ export default function DailyGame() {
   useEffect(() => {
     if (gameStatus === 'won' && !hasSubmittedDaily(puzzle.puzzleNumber)) {
       const saved = getSavedName();
-      if (saved) {
+      if (saved && !isTurnstileEnabled()) {
         handleDailySubmit(saved);
       } else {
         setShowNamePrompt(true);
@@ -75,10 +76,10 @@ export default function DailyGame() {
     setModalDismissed(true);
   };
 
-  const handleDailySubmit = async (name) => {
+  const handleDailySubmit = async (name, turnstileToken) => {
     const uid = getOrCreateUid();
     const days = updateDailyStreakDays();
-    await submitDailyScore({ uid, name, days, score: apples });
+    await submitDailyScore({ uid, name, days, score: apples, turnstileToken });
     saveName(name);
     markSubmittedDaily(puzzle.puzzleNumber);
     setShowNamePrompt(false);

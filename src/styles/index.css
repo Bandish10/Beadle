@@ -30,7 +30,7 @@ body {
   transition:
     background-color var(--speed) var(--ease),
     color var(--speed) var(--ease);
-  animation: bgSwap 36s infinite;
+  animation: bgSwap 55s infinite;
 }
 
 #root {
@@ -103,32 +103,48 @@ body {
 }
 @keyframes bgSwap {
   0%,
-  12% {
+  7% {
     background-image: var(--bg-image-1);
   }
-  14%,
-  26% {
+  9%,
+  16% {
     background-image: var(--bg-image-2);
   }
-  28%,
-  40% {
+  18%,
+  25% {
     background-image: var(--bg-image-3);
   }
-  42%,
-  54% {
+  27%,
+  34% {
     background-image: var(--bg-image-4);
   }
-  56%,
-  68% {
+  36%,
+  43% {
     background-image: var(--bg-image-5);
   }
-  70%,
-  82% {
+  45%,
+  52% {
     background-image: var(--bg-image-6);
   }
-  84%,
-  96% {
+  54%,
+  61% {
     background-image: var(--bg-image-7);
+  }
+  63%,
+  70% {
+    background-image: var(--bg-image-8);
+  }
+  72%,
+  79% {
+    background-image: var(--bg-image-9);
+  }
+  81%,
+  88% {
+    background-image: var(--bg-image-10);
+  }
+  90%,
+  98% {
+    background-image: var(--bg-image-11);
   }
   100% {
     background-image: var(--bg-image-1);

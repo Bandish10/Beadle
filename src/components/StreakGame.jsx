@@ -17,6 +17,7 @@ import {
   markSubmittedStreak,
 } from '../utils/leaderboard';
 import { useNavigate } from 'react-router-dom';
+import { isTurnstileEnabled } from '../utils/security';
 
 const MAX_ATTEMPTS = 5;
 
@@ -82,7 +83,7 @@ export default function StreakGame() {
   useEffect(() => {
     if (gameStatus === 'lost' && !hasSubmittedStreak(streakSessionId)) {
       const saved = getSavedName();
-      if (saved) {
+      if (saved && !isTurnstileEnabled()) {
         handleStreakSubmit(saved);
       } else {
         setShowNamePrompt(true);
@@ -135,9 +136,9 @@ export default function StreakGame() {
     setStreakSessionId(resetStreakSessionId());
   };
 
-  const handleStreakSubmit = async (name) => {
+  const handleStreakSubmit = async (name, turnstileToken) => {
     const uid = getOrCreateUid();
-    await submitStreakScore({ uid, name, streak });
+    await submitStreakScore({ uid, name, streak, turnstileToken });
     saveName(name);
     markSubmittedStreak(streakSessionId);
     setShowNamePrompt(false);

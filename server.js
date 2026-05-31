@@ -5,6 +5,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dailyLeaderboard from './backend/routes/leaderboard/daily.js';
 import { getPool } from './backend/db.js';
+import {
+  createRateLimit,
+  getAllowedOrigins,
+  requireTrustedOrigin,
+} from './backend/security.js';
 import streakLeaderboard from './backend/routes/leaderboard/streak.js';
 import visitors from './backend/routes/visitors.js';
 
@@ -12,10 +17,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const port = process.env.PORT || 3000;
 const isProduction = !process.argv.includes('--dev');
-const allowedOrigins = getAllowedOrigins();
+const allowedOrigins = getAllowedOrigins({ includeDev: !isProduction });
 
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
-app.use(express.json());
+app.use(express.json({ limit: '8kb' }));
 app.use(
   cors({
     origin(origin, callback) {
@@ -30,8 +36,40 @@ app.use(
 app.use((_req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
   next();
 });
+
+app.use(
+  '/api',
+  createRateLimit({
+    windowMs: 60 * 1000,
+    max: 180,
+    keyPrefix: 'api',
+  }),
+);
+app.use(
+  '/api/leaderboard',
+  requireTrustedOrigin(allowedOrigins, { requireOrigin: isProduction }),
+  createRateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 20,
+    methods: ['POST'],
+    keyPrefix: 'leaderboard-write',
+    message: 'Too many leaderboard submissions',
+  }),
+);
+app.use(
+  '/api/visitors',
+  requireTrustedOrigin(allowedOrigins, { requireOrigin: isProduction }),
+  createRateLimit({
+    windowMs: 60 * 1000,
+    max: 20,
+    methods: ['POST'],
+    keyPrefix: 'visitors-write',
+    message: 'Too many visitor updates',
+  }),
+);
 
 function route(handler) {
   return (req, res, next) => {
@@ -85,20 +123,3 @@ app.use((err, _req, res, _next) => {
 app.listen(port, () => {
   console.log(`Beadle running at http://localhost:${port}`);
 });
-
-function getAllowedOrigins() {
-  const configured = [
-    process.env.FRONTEND_ORIGIN,
-    process.env.ALLOWED_ORIGINS,
-  ]
-    .filter(Boolean)
-    .flatMap((value) => value.split(','))
-    .map((value) => value.trim())
-    .filter(Boolean);
-
-  const defaults = process.argv.includes('--dev')
-    ? ['http://localhost:3000', 'http://127.0.0.1:3000']
-    : [];
-
-  return new Set([...defaults, ...configured]);
-}

@@ -1,4 +1,10 @@
 import { getPool, parseJsonBody } from '../../db.js';
+import {
+  validateInteger,
+  validateName,
+  validateUid,
+  verifyTurnstileToken,
+} from '../../security.js';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -46,9 +52,17 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { uid, name, streak } = parseJsonBody(req);
-    if (!uid || !name) {
-      return res.status(400).json({ error: 'uid and name are required' });
+    const { uid, name, streak, turnstileToken } = parseJsonBody(req);
+    const safeName = validateName(name);
+    const safeStreak = validateInteger(streak, { min: 0, max: 10000 });
+
+    if (!validateUid(uid) || !safeName || safeStreak === null) {
+      return res.status(400).json({ error: 'Invalid leaderboard payload' });
+    }
+
+    const turnstileOk = await verifyTurnstileToken(turnstileToken, req.ip);
+    if (!turnstileOk) {
+      return res.status(403).json({ error: 'Challenge verification failed' });
     }
 
     try {
@@ -60,7 +74,7 @@ export default async function handler(req, res) {
          DO UPDATE SET name = EXCLUDED.name,
                        streak = GREATEST(streak_leaderboard.streak, EXCLUDED.streak)
          RETURNING uuid, uid, name, streak`,
-        [uid, name, Number(streak || 0)],
+        [uid, safeName, safeStreak],
       );
       return res.status(200).json(rows[0]);
     } catch (err) {

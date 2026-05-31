@@ -1,4 +1,10 @@
 import { getPool, parseJsonBody } from '../../db.js';
+import {
+  validateInteger,
+  validateName,
+  validateUid,
+  verifyTurnstileToken,
+} from '../../security.js';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
@@ -45,9 +51,18 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
-    const { uid, name, days, score } = parseJsonBody(req);
-    if (!uid || !name) {
-      return res.status(400).json({ error: 'uid and name are required' });
+    const { uid, name, days, score, turnstileToken } = parseJsonBody(req);
+    const safeName = validateName(name);
+    const safeDays = validateInteger(days, { min: 0, max: 5000 });
+    const safeScore = validateInteger(score, { min: 0, max: 1000000 });
+
+    if (!validateUid(uid) || !safeName || safeDays === null || safeScore === null) {
+      return res.status(400).json({ error: 'Invalid leaderboard payload' });
+    }
+
+    const turnstileOk = await verifyTurnstileToken(turnstileToken, req.ip);
+    if (!turnstileOk) {
+      return res.status(403).json({ error: 'Challenge verification failed' });
     }
 
     try {
@@ -60,7 +75,7 @@ export default async function handler(req, res) {
                        days = EXCLUDED.days,
                        score = EXCLUDED.score
          RETURNING uuid, uid, name, days, score`,
-        [uid, name, Number(days || 0), Number(score || 0)],
+        [uid, safeName, safeDays, safeScore],
       );
       return res.status(200).json(rows[0]);
     } catch (err) {

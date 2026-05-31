@@ -110,22 +110,28 @@ function parseJsonResponse(res, text, errorMessage) {
   return JSON.parse(text);
 }
 
-export async function submitDailyScore({ uid, name, days, score }) {
+export async function submitDailyScore({
+  uid,
+  name,
+  days,
+  score,
+  turnstileToken,
+}) {
   const res = await fetch(apiUrl('/api/leaderboard/daily'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ uid, name, days, score }),
+    body: JSON.stringify({ uid, name, days, score, turnstileToken }),
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to save daily score');
   return parseJsonResponse(res, text, 'Failed to save daily score');
 }
 
-export async function submitStreakScore({ uid, name, streak }) {
+export async function submitStreakScore({ uid, name, streak, turnstileToken }) {
   const res = await fetch(apiUrl('/api/leaderboard/streak'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ uid, name, streak }),
+    body: JSON.stringify({ uid, name, streak, turnstileToken }),
   });
   const text = await res.text();
   if (!res.ok) throw new Error('Failed to save streak score');
